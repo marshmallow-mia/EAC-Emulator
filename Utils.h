@@ -4,29 +4,30 @@
 
 // IAT Hook implementation for Utils_HookImport
 // This performs Import Address Table (IAT) hooking to redirect function calls
-inline void Utils_HookImport(const char* szModuleName, const char* szImportModule, const char* szFunctionName, void* pHookFunction)
+// Returns true if hook was successfully applied, false otherwise
+inline bool Utils_HookImport(const char* szModuleName, const char* szImportModule, const char* szFunctionName, void* pHookFunction)
 {
     if (!szModuleName || !szImportModule || !szFunctionName || !pHookFunction)
-        return;
+        return false;
 
     // Get the base address of the module to hook
     HMODULE hModule = GetModuleHandleA(szModuleName);
     if (!hModule)
-        return;
+        return false;
 
     // Parse PE headers to find the import directory
     PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)hModule;
     if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
-        return;
+        return false;
 
     PIMAGE_NT_HEADERS pNTHeaders = (PIMAGE_NT_HEADERS)((uintptr_t)hModule + pDosHeader->e_lfanew);
     if (pNTHeaders->Signature != IMAGE_NT_SIGNATURE)
-        return;
+        return false;
 
     // Get the import directory
     IMAGE_DATA_DIRECTORY importDirectory = pNTHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
     if (importDirectory.VirtualAddress == 0)
-        return;
+        return false;
 
     PIMAGE_IMPORT_DESCRIPTOR pImportDesc = (PIMAGE_IMPORT_DESCRIPTOR)((uintptr_t)hModule + importDirectory.VirtualAddress);
 
@@ -60,15 +61,18 @@ inline void Utils_HookImport(const char* szModuleName, const char* szImportModul
             // Change memory protection to allow writing to IAT
             DWORD oldProtect;
             if (!VirtualProtect(&pThunk->u1.Function, sizeof(uintptr_t), PAGE_READWRITE, &oldProtect))
-                return;
+                return false; // Failed to change memory protection
 
             // Replace the function pointer in the IAT
             pThunk->u1.Function = (uintptr_t)pHookFunction;
 
             // Restore original memory protection
-            VirtualProtect(&pThunk->u1.Function, sizeof(uintptr_t), oldProtect, &oldProtect);
+            DWORD dummy;
+            VirtualProtect(&pThunk->u1.Function, sizeof(uintptr_t), oldProtect, &dummy);
             
-            return; // Hook applied successfully
+            return true; // Hook applied successfully
         }
     }
+    
+    return false; // Function not found in IAT
 }
