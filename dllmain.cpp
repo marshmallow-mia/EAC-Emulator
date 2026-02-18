@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include "D:\work\SDK\Utils.h"
+#include "Utils.h"
 
 class EAC_VirtualFunctions
 {
