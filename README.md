@@ -8,6 +8,11 @@ This usermode x64 dll is used to emulate x64 EAC. I created it for game Enlisted
 ### Automated Build (GitHub Actions)
 The project includes a GitHub Actions workflow that automatically compiles the C++ code on every push or pull request to the main/master branch. The compiled DLL is available as an artifact in the Actions tab.
 
+The workflow includes:
+- Complete IAT (Import Address Table) hooking implementation
+- All necessary Windows headers and dependencies
+- MSVC compilation with proper linking
+
 ### Manual Build
 To build the DLL manually on Windows:
 ```cmd
