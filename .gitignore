@@ -1,0 +1,25 @@
+# Build artifacts
+*.dll
+*.lib
+*.exp
+*.obj
+*.pdb
+*.ilk
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Visual Studio specific
+*.suo
+*.user
+*.sln.docstates
+.vs/
+
+# CodeQL
+_codeql_detected_source_root
